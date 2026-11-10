@@ -6,6 +6,7 @@ rust-version.workspace = true
 
 [dependencies]
 orchestra-domain.workspace = true
+orchestra-pki = { workspace = true, features = ["client"] }
 anyhow.workspace = true
 clap.workspace = true
 reqwest.workspace = true

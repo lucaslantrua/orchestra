@@ -8,8 +8,8 @@
 use std::{collections::BTreeSet, sync::Arc, time::Duration};
 
 use orchestra_domain::{
-    AIWorkload, Instance, InstancePhase, InstanceSpec, MODEL_LABEL, Node, NodePhase, Object, Workload,
-    WorkloadSpec, now_ms,
+    AIWorkload, Instance, InstancePhase, InstanceSpec, JoinToken, MODEL_LABEL, Node, NodePhase, Object,
+    Workload, WorkloadSpec, now_ms,
 };
 use orchestra_scheduler::schedule;
 use orchestra_state::{Result, Store, StoreError};
@@ -74,6 +74,7 @@ pub async fn run(store: Arc<Store>, config: Config) {
 
 pub fn reconcile_once(store: &Store, now_ms: u64, config: &Config) -> Result<Summary> {
     let mut summary = Summary::default();
+    expire_join_tokens(store, now_ms)?;
     node_lifecycle(store, now_ms, config, &mut summary)?;
     lower_ai_workloads(store)?;
     garbage_collect(store, &mut summary)?;
@@ -89,6 +90,15 @@ fn ignore_missing<T>(result: Result<T>) -> Result<()> {
         Ok(_) | Err(StoreError::NotFound { .. }) => Ok(()),
         Err(error) => Err(error),
     }
+}
+
+fn expire_join_tokens(store: &Store, now_ms: u64) -> Result<()> {
+    for token in store.list::<JoinToken>(None)? {
+        if token.spec.expires_at_ms <= now_ms {
+            store.delete::<JoinToken>("", &token.metadata.name)?;
+        }
+    }
+    Ok(())
 }
 
 fn node_lifecycle(store: &Store, now_ms: u64, config: &Config, summary: &mut Summary) -> Result<()> {

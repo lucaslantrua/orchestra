@@ -3,6 +3,7 @@
 
 pub mod ai;
 pub mod instance;
+pub mod join;
 pub mod meta;
 pub mod node;
 pub mod quantity;
@@ -10,6 +11,10 @@ pub mod workload;
 
 pub use ai::{AIWorkload, AIWorkloadSpec, Engine, MODEL_LABEL};
 pub use instance::{Instance, InstancePhase, InstanceSpec, InstanceStatus, InstanceStatusReport};
+pub use join::{
+    CertificateRequest, CertificateResponse, CreateJoinTokenRequest, CreateJoinTokenResponse, JoinRequest,
+    JoinToken, JoinTokenSpec,
+};
 pub use meta::{API_VERSION, DEFAULT_NAMESPACE, Object, ObjectMeta, OwnerRef, ValidationError};
 pub use node::{Capacity, GpuDevice, Node, NodeHeartbeat, NodePhase, NodeSpec, NodeStatus};
 pub use quantity::{Cpu, Memory, QuantityError};

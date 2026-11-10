@@ -4,7 +4,10 @@ use std::path::PathBuf;
 
 use anyhow::{Context, bail};
 use clap::{Parser, Subcommand, ValueEnum};
-use orchestra_domain::{AIWorkload, Instance, Node, Workload, now_ms};
+use orchestra_domain::{
+    AIWorkload, CreateJoinTokenRequest, CreateJoinTokenResponse, Instance, Node, Workload, now_ms,
+};
+use orchestra_pki::{KeyMaterial, client::https_client};
 use serde::{Deserialize, de::DeserializeOwned};
 use serde_json::Value;
 
@@ -16,9 +19,36 @@ struct Cli {
         long,
         global = true,
         env = "ORCHESTRA_SERVER",
-        default_value = "http://127.0.0.1:7600"
+        default_value = "https://127.0.0.1:7600"
     )]
     server: String,
+
+    /// Cluster CA certificate.
+    #[arg(
+        long,
+        global = true,
+        env = "ORCHESTRA_CA_CERT",
+        default_value = "orchestra-data/pki/ca.crt"
+    )]
+    ca_cert: PathBuf,
+
+    /// Client certificate identifying you.
+    #[arg(
+        long,
+        global = true,
+        env = "ORCHESTRA_CLIENT_CERT",
+        default_value = "orchestra-data/pki/admin.crt"
+    )]
+    cert: PathBuf,
+
+    /// Private key of the client certificate.
+    #[arg(
+        long,
+        global = true,
+        env = "ORCHESTRA_CLIENT_KEY",
+        default_value = "orchestra-data/pki/admin.key"
+    )]
+    key: PathBuf,
 
     #[command(subcommand)]
     command: Command,
@@ -26,6 +56,11 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Manage node join tokens.
+    Token {
+        #[command(subcommand)]
+        command: TokenCommand,
+    },
     /// Create or update resources from a YAML or JSON manifest.
     Apply {
         /// Manifest file; may contain several YAML documents.
@@ -42,7 +77,7 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
-    /// Delete a workload or AI workload (its instances follow).
+    /// Delete a workload or AI workload (its instances follow), or evict a node.
     Delete {
         resource: Resource,
         name: String,
@@ -53,6 +88,16 @@ enum Command {
     Cordon { node: String },
     /// Allow scheduling on a node again.
     Uncordon { node: String },
+}
+
+#[derive(Subcommand)]
+enum TokenCommand {
+    /// Create a token that lets new agents enroll until it expires.
+    Create {
+        /// Validity in minutes (at most 24 hours).
+        #[arg(long, default_value_t = 60)]
+        ttl_minutes: u64,
+    },
 }
 
 #[derive(Clone, Copy, PartialEq, ValueEnum)]
@@ -290,13 +335,34 @@ async fn main() -> std::process::ExitCode {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
+    let read = |path: &PathBuf, what: &str| {
+        std::fs::read_to_string(path).with_context(|| format!("reading the {what} {}", path.display()))
+    };
+    let ca_pem = read(&cli.ca_cert, "cluster CA certificate")?;
+    let identity = KeyMaterial {
+        cert_pem: read(&cli.cert, "client certificate")?,
+        key_pem: read(&cli.key, "client key")?,
+    };
     let client = Client {
-        http: reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(10))
-            .build()?,
+        http: https_client(&ca_pem, Some(&identity))?,
         server: cli.server.trim_end_matches('/').to_string(),
     };
     match cli.command {
+        Command::Token {
+            command: TokenCommand::Create { ttl_minutes },
+        } => {
+            let request = client
+                .http
+                .post(format!("{}/api/v1/jointokens", client.server))
+                .json(&CreateJoinTokenRequest {
+                    ttl_seconds: ttl_minutes * 60,
+                });
+            let created: CreateJoinTokenResponse = client.send(request).await?.json().await?;
+            // The token is the only thing on stdout so it can be captured by scripts.
+            println!("{}", created.token);
+            eprintln!("valid for {ttl_minutes} minute(s); it is shown only once");
+            Ok(())
+        }
         Command::Apply { file } => apply(&client, file).await,
         Command::Get {
             resource,
@@ -308,16 +374,17 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
             name,
             namespace,
         } => {
-            if !matches!(resource, Resource::Workloads | Resource::Aiworkloads) {
-                bail!("only workloads and aiworkloads can be deleted");
-            }
-            let url = format!(
-                "{}/api/v1/namespaces/{namespace}/{}/{name}",
-                client.server,
-                resource.plural()
-            );
+            let url = match resource {
+                Resource::Instances => bail!("instances are managed by their workload and cannot be deleted"),
+                Resource::Nodes => format!("{}/api/v1/nodes/{name}", client.server),
+                _ => format!(
+                    "{}/api/v1/namespaces/{namespace}/{}/{name}",
+                    client.server,
+                    resource.plural()
+                ),
+            };
             client.send(client.http.delete(url)).await?;
-            println!("{namespace}/{name} deleted");
+            println!("{name} deleted");
             Ok(())
         }
         Command::Cordon { node } => {
