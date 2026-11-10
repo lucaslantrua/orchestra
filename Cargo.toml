@@ -1,0 +1,28 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "apps/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+
+[workspace.dependencies]
+orchestra-domain = { path = "crates/orchestra-domain" }
+orchestra-state = { path = "crates/orchestra-state" }
+orchestra-scheduler = { path = "crates/orchestra-scheduler" }
+orchestra-controller = { path = "crates/orchestra-controller" }
+orchestra-api = { path = "crates/orchestra-api" }
+
+anyhow = "1"
+axum = "0.8"
+clap = { version = "4", features = ["derive", "env"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "query"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_norway = "0.9"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal", "sync", "time"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+uuid = { version = "1", features = ["v4"] }

@@ -1,0 +1,16 @@
+[package]
+name = "orchestra-controller"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+orchestra-domain.workspace = true
+orchestra-state.workspace = true
+orchestra-scheduler.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

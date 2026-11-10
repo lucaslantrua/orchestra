@@ -1,0 +1,30 @@
+apiVersion: orchestra.io/v1
+kind: Workload
+metadata:
+  name: web
+  namespace: production
+spec:
+  replicas: 3
+  template:
+    runtime:
+      type: container
+      image: registry.internal/web:1.0
+    resources:
+      cpu: 500m
+      memory: 256Mi
+---
+apiVersion: orchestra.io/v1
+kind: Workload
+metadata:
+  name: database
+  namespace: production
+spec:
+  replicas: 1
+  template:
+    runtime:
+      type: virtualMachine
+      image: registry.internal/linux/server:1.0
+      rootDisk: 100Gi
+    resources:
+      cpu: 2
+      memory: 4Gi

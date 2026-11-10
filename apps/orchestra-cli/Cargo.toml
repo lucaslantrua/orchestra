@@ -1,0 +1,19 @@
+[package]
+name = "orchestra-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+orchestra-domain.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_norway.workspace = true
+tokio.workspace = true
+
+[[bin]]
+name = "orchestra"
+path = "src/main.rs"

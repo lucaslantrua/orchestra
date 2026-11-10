@@ -1,0 +1,25 @@
+apiVersion: orchestra.io/v1
+kind: AIWorkload
+metadata:
+  name: llm-production
+spec:
+  model:
+    name: internal-llm
+    version: "1.0"
+
+  serving:
+    engine: vllm
+
+  resources:
+    gpu:
+      vendor: nvidia
+      count: 4
+      memory: 80Gi
+
+  scaling:
+    minReplicas: 2
+    maxReplicas: 8
+
+  inference:
+    api: openai-compatible
+    streaming: true
