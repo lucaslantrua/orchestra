@@ -1,8 +1,5 @@
 <h1 align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/orchestra-logo-dark.svg">
-    <img src="assets/orchestra-logo.svg" alt="ORCHESTRA" width="440">
-  </picture>
+  <img src="assets/orchestra-banner.svg" alt="ORCHESTRA" width="720">
 </h1>
 
 Plateforme intégrée d'orchestration : conteneurs, machines virtuelles et inférence IA,
