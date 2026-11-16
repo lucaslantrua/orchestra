@@ -1,4 +1,9 @@
-# ORCHESTRA
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/orchestra-logo-dark.svg">
+    <img src="assets/orchestra-logo.svg" alt="ORCHESTRA" width="440">
+  </picture>
+</h1>
 
 Plateforme intégrée d'orchestration : conteneurs, machines virtuelles et inférence IA,
 avec un cœur de contrôle en Rust.
