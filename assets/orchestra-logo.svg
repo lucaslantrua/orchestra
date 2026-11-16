@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" width="500" height="120" role="img" aria-label="ORCHESTRA">
+  <title>ORCHESTRA</title>
+  <path d="M75.24 24.10 A39 39 0 0 1 98.71 64.75" fill="none" stroke="#38BDF8" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="93.77" cy="79.50" r="4.6" fill="#38BDF8"/>
+  <path d="M83.47 91.15 A39 39 0 0 1 36.53 91.15" fill="none" stroke="#E6399B" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="26.23" cy="79.50" r="4.6" fill="#E6399B"/>
+  <path d="M21.29 64.75 A39 39 0 0 1 44.76 24.10" fill="none" stroke="#34D399" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="60.00" cy="21.00" r="4.6" fill="#34D399"/>
+  <circle cx="60" cy="60" r="17" fill="none" stroke="#0F172A" stroke-width="2" opacity=".18"/>
+  <circle cx="60" cy="60" r="8.5" fill="#0F172A"/>
+  <text x="140" y="76" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="44" letter-spacing="7" fill="#0F172A">ORCHESTRA</text>
+</svg>
